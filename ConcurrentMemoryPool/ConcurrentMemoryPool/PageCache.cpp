@@ -13,8 +13,10 @@ Span* PageCache::NewSpan(size_t k)
 	if (k > NPAGES - 1)
 	{
 		void* ptr = SystemAlloc(k);	// 直接在堆上获取大于128页的内存
-		Span* span = _spanPool.New();
-		span->_pageId = reinterpret_cast<PAGE_ID>(ptr) >> PAGE_SHIFT;	// 将内存地址计算成页号
+		Span* span = _spanPool.New();	// 从定长内存池获取一个Span对象
+
+		// 将内存地址计算成页号，用基数树记录这块内存地址和这个Span关联
+		span->_pageId = reinterpret_cast<PAGE_ID>(ptr) >> PAGE_SHIFT;	
 		span->_n = k;
 		//_idSpanMap[span->_pageId] = span;
 		_idSpanMap.set(span->_pageId, span);
@@ -75,8 +77,12 @@ Span* PageCache::NewSpan(size_t k)
 
 	// 没有大页的Span了,只能找堆要一个最大页的Span
 	Span* bigSpan = _spanPool.New();
-	void* ptr = SystemAlloc(NPAGES - 1);
-	bigSpan->_pageId = reinterpret_cast<PAGE_ID>(ptr) >> PAGE_SHIFT;	// 将内存地址计算成页号
+	void* ptr = SystemAlloc(NPAGES - 1); 
+
+	// 将内存地址计算成页号,因为VirtualAlloc()设置了起始地址为0，所以(>> PAGE_SHIFT)移动的都是0
+	bigSpan->_pageId = reinterpret_cast<PAGE_ID>(ptr) >> PAGE_SHIFT;
+	cout << ptr << "---" << reinterpret_cast<PAGE_ID>(ptr) << "---" << bigSpan->_pageId << "---" << (bigSpan->_pageId << PAGE_SHIFT) << endl;
+
 	bigSpan->_n = NPAGES - 1;
 
 	// 将Span插入最大页的桶中, 此时列表里已经拥有可以切分的大块页了
@@ -103,7 +109,7 @@ Span* PageCache::Map0bjjectToSpan(void* obj)
 	assert(false);
 	return nullptr;
 	*/
-	auto ret = reinterpret_cast<Span*>(_idSpanMap.get(id));
+	Span* ret = reinterpret_cast<Span*>(_idSpanMap.get(id));
 	assert(ret != nullptr);
 
 	return ret;

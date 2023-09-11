@@ -42,8 +42,6 @@ static void ConcurrentFree(void* ptr)
 
 	if (size > MAX_BYTES)
 	{
-		Span* span = PageCache::GetInstance()->Map0bjjectToSpan(ptr);
-
 		// 将这个Span交给PageCache合并
 		PageCache::GetInstance()->GetPageMtx().lock();	//Page上锁
 		PageCache::GetInstance()->ReleaseSpanToPageCache(span);

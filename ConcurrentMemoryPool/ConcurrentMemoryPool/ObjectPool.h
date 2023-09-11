@@ -2,6 +2,8 @@
 
 #include"Common.h"
 
+// 每个ThreadCache对象都有208个FreeList桶，每个FreeList对象24字节
+// 每个线程的ThreadCache对象都要从定长内存池中获取4992字节
 
 template<class T>
 class ObjectPool
@@ -26,7 +28,9 @@ public:
 			if (_remainBytes < sizeof(T))
 			{
 				_remainBytes = 16 * 8 * 1024; //128kb
-				_memory = reinterpret_cast<char*>(SystemAlloc(_remainBytes >> 13));
+
+				// 从堆上获取128kb内存
+				_memory = reinterpret_cast<char*>(SystemAlloc(_remainBytes >> PAGE_SHIFT));
 				if (_memory == nullptr)
 					throw std::bad_alloc();
 			}
