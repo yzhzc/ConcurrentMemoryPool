@@ -53,3 +53,16 @@ static void ConcurrentFree(void* ptr)
 		pTLSThreadCache->Deallocate(ptr, size);
 	}
 }
+
+// 每个线程单独的定制回收器，线程退出时，析构回收pTLSThreadCache空间到定长内存池中
+class TLSfree
+{
+public:
+	~TLSfree()
+	{
+		if (pTLSThreadCache != nullptr)
+			tcPool.Delete(pTLSThreadCache);
+	}
+};
+
+static _declspec(thread) TLSfree tf;
