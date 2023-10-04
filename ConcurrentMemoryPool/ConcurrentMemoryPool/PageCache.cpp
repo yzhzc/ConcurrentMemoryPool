@@ -81,8 +81,6 @@ Span* PageCache::NewSpan(size_t k)
 
 	// 将内存地址计算成页号,因为VirtualAlloc()设置了起始地址为0，所以(>> PAGE_SHIFT)移动的都是0
 	bigSpan->_pageId = reinterpret_cast<PAGE_ID>(ptr) >> PAGE_SHIFT;
-	cout << ptr << "---" << reinterpret_cast<PAGE_ID>(ptr) << "---" << bigSpan->_pageId << "---" << (bigSpan->_pageId << PAGE_SHIFT) << endl;
-
 	bigSpan->_n = NPAGES - 1;
 
 	// 将Span插入最大页的桶中, 此时列表里已经拥有可以切分的大块页了

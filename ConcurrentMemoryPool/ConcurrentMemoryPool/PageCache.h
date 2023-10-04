@@ -7,7 +7,7 @@
 class PageCache
 {
 public:
-	// 单例模式(饿汉)
+	// 单例模式(启动直接创建模式)
 	static PageCache* GetInstance(){
 		return &_sInst;
 	}
